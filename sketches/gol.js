@@ -1,55 +1,100 @@
 var grid;
+var timer;
+var gen;
+var paused;
+var speed;
 
 function setup () {
-  createCanvas(400, 400);
+  createCanvas(600, 600);
+  
   grid = new Grid(20);
   grid.randomize();
-
-  print(grid.isValidPosition(0, 0));
+  timer=0;
+  gen=0;
+  paused=false;
+  speed=5;
 }
 
 function draw () {
   background(250);
-
-  grid.updateNeighborCounts();
-  grid.updatePopulation();
   grid.draw();
-}
-
-function mousePressed() {
-  // grid.updatePopulation();
-
-  // var randomColumn = floor(random(grid.numberOfColumns));
-  // var randomRow = floor(random(grid.numberOfRows));
-
-  // var randomCell = grid.cells[randomColumn][randomRow];
-  // var neighborCount = grid.getNeighbors(randomCell).length;
-
-  // print("cell at " + randomCell.column + ", " + randomCell.row + " has " + neighborCount + " neighbors");
-// print(neighbors.length || "undefined");
-
-  grid.updateNeighborCounts();
-  print(grid.cells);
+  if(!paused){
+  if(timer%speed===0){
+   grid.updateNeighborCounts();
+   grid.updatePopulation();
+   gen++;
+  } 
+  timer++;
+  if(timer>500){
+    grid = new Grid(20);
+    grid.randomize();
+    timer=0;
+    gen=0;
+  }
+  }
+  
 }
 
 class Grid {
   constructor (cellSize) {
-    this.cellSize = cellSize;
-    this.numberOfColumns = floor(width / this.cellSize);
-    this.numberOfRows = floor(height / this.cellSize);
-
-    this.cells = new Array(this.numberOfColumns);
+    // update the contructor to take cellSize as a parameter
+    // use cellSize to calculate and assign values for numberOfColumns and numberOfRows
+    this.numberOfColumns=width/cellSize;
+    this.numberOfRows=height/cellSize;
+    this.cellSize=cellSize;
+    
+    var x = this.numberOfColumns; // how big the first array should be
+var y = this.numberOfRows; // how big each array inside of the first array should be
+var cells = new Array(x);
+for (var i = 0; i < cells.length; i ++) {
+  cells[i] = new Array(y);
+}
+    
     for (var column = 0; column < this.numberOfColumns; column ++) {
-      this.cells[column] = new Array(this.numberOfRows);
-    }
-
-    for (var column = 0; column < this.numberOfColumns; column ++) {
-      for (var row = 0; row < this.numberOfRows; row++) {
-        this.cells[column][row] = new Cell(column, row, cellSize)
-      }
-    }
-    print(this.cells);
+  for (var row = 0; row < this.numberOfRows; row++) {
+    cells[column][row] = new Cell(column, row, this.cellSize);
   }
+}
+this.cells=cells;
+    
+}
+
+currentValues(){
+  var count=0;
+  for (var column = 0; column < this.numberOfColumns; column ++) {
+    for (var row = 0; row < this.numberOfRows; row++) {
+      if(this.cells[column][row].isAlive)
+        count++;
+  }}
+  fill(0)
+  textSize(20);
+  text("Alive: " + count, width-100, 80);
+  text("Gen: " + gen, width-100, 60);
+}
+
+buttons(){
+  textSize(15);
+  text("Pause", width-90, 20);
+  text("Speed", width-100, 40);
+  textSize(12);
+  text("+", width-54, 40);
+  text("-", width-33, 39);
+  stroke(0);
+  strokeWeight(2);
+  noFill();
+  rect(width-100, 5, 80, 20);
+  strokeWeight(1);
+  rect(width-55, 30, 10, 10);
+  rect(width-35, 30, 10, 10);
+  noStroke();
+}
+
+randomize(){
+   for (var column = 0; column < this.numberOfColumns; column ++) {
+  for (var row = 0; row < this.numberOfRows; row++) {
+    this.cells[column][row].setIsAlive(floor(random(2)));
+  }}
+}
 
   draw () {
     for (var column = 0; column < this.numberOfColumns; column ++) {
@@ -57,102 +102,104 @@ class Grid {
         this.cells[column][row].draw();
       }
     }
+    grid.currentValues();
+    grid.buttons();
   }
-
-  randomize () {
-    for (var column = 0; column < this.numberOfColumns; column ++) {
-      for (var row = 0; row < this.numberOfRows; row++) {
-        var value = floor(random(2));
-        this.cells[column][row].setIsAlive(value);
-      }
-    }
-  }
-
-  updateNeighborCounts () {
-    for (var column = 0; column < this.numberOfColumns; column ++) {
-      for (var row = 0; row < this.numberOfRows; row++) {
-        var currentCell = this.cells[column][row]
-        currentCell.liveNeighborCount = 0;
-
-        var neighborsArray = this.getNeighbors(currentCell);
-
-        for (var position in neighborsArray) {
-          if (neighborsArray[position].isAlive) {
-            currentCell.liveNeighborCount += 1;
-          }
-        }
-      }
-    }
-  }
-
-  getNeighbors(currentCell) {
-    var neighbors = [];
-
-    for (var columnOffset = -1; columnOffset <= 1; columnOffset++) {
-      for (var rowOffset = -1; rowOffset <= 1; rowOffset++) {
-        var neighborX = currentCell.column + columnOffset;
-        var neighborY = currentCell.row + rowOffset;
-
-        if (this.isValidPosition(neighborX, neighborY)) {
-          var neighborCell = this.cells[neighborX][neighborY];
-
-          if (neighborCell != currentCell) {
-            neighbors.push(neighborCell);
-          }
-        }
-      }
-    }
-
-    return neighbors;
-  }
-
-  isValidPosition (column, row) {
-    var validColumn = column >= 0 && column < this.numberOfColumns;
-    var validRow = row >= 0 && row < this.numberOfRows
-
-    return  validColumn && validRow;
-  }
-
-  updatePopulation () {
+  
+  updatePopulation(){
     for (var column = 0; column < this.numberOfColumns; column ++) {
       for (var row = 0; row < this.numberOfRows; row++) {
         this.cells[column][row].liveOrDie();
       }
     }
   }
+  
+ getNeighbors(currentCell) {
+  var neighbors = [];
+
+  // add logic to get neighbors and add them to the array
+    for (var xOffset = -1; xOffset <= 1; xOffset++) {
+  for (var yOffset = -1; yOffset <= 1; yOffset++) {
+    var neighborColumn = currentCell.column + xOffset;
+    var neighborRow = currentCell.row + yOffset;
+    if(grid.isValidPosition(neighborColumn, neighborRow) && !(xOffset===0 && yOffset===0) && this.cells[neighborColumn][neighborRow].isAlive)
+      neighbors.push(this.cells[neighborColumn][neighborRow]);
+    else;
+      
+  }
+}
+  return neighbors;
+  }
+  
+  updateNeighborCounts () {
+  // for each cell in the grid
+   for (var column = 0; column < this.numberOfColumns-1; column ++) {
+      for (var row = 0; row < this.numberOfRows-1; row++) {
+        this.cells[column][row].liveNeighborCount=0;
+        this.cells[column][row].liveNeighborCount=grid.getNeighbors(this.cells[column][row]).length;
+      }
+    }
+    // reset it's neighbor count to 0
+    // get the cell's neighbors
+    // increase liveNeighborCount by 1 for each neighbor that is alive
+}
+  
+  isValidPosition (column, row) {
+  // add logic that checks if the column and row exist in the grid
+  if(column > width || column < 0 || row > height || row < 0)
+    return false;
+  else
+    return true;
+  // return true if they are valid and false if they are not
 }
 
-class Cell {
-  constructor (column, row, size) {
-    this.column = column;
-    this.row = row;
-    this.size = size;
-    this.isAlive = false;
-    this.liveNeighborCount = 0;
+}
+class Cell{
+  constructor(column, row, size){
+    this.column=column;
+    this.row=row;
+    this.size=size;
+    this.isAlive=false;
+    this.liveNeighborCount=0;
   }
+  
+  draw(){
+      if(!this.isAlive)
+        fill(240);
+      else
+        fill(0,200,0);
+        noStroke();
+        rect(this.column * this.size + 1, this.row * this.size + 1, this.size - 1, this.size - 1);
+  }
+  
+  setIsAlive(value){
+    if(!value)
+      this.isAlive=true;
+    else  
+      this.isAlive=false;
+  }
+  
+  liveOrDie(){
+    if(this.isAlive && this.liveNeighborCount>3)
+      this.isAlive=false;
+    else if(this.isAlive && this.liveNeighborCount<2)
+      this.isAlive=false;
+    else if(!this.isAlive && this.liveNeighborCount===3)
+      this.isAlive=true;
+    else;
+  }
+}
 
-  draw () {
-    if (this.isAlive) {
-      fill(color(200, 0, 200));
-    } else {
-      fill(color(240));
-    }
-    noStroke();
-    rect(this.column * this.size + 1, this.row * this.size + 1, this.size - 1, this.size - 1);
-  }
+function mousePressed(){
+  checkPause();
+  checkSpeed();
+}
 
-  setIsAlive (value) {
-    if (value) {
-      this.isAlive = true;
-    } else {
-      this.isAlive = false;
-    }
-  }
-
-  liveOrDie () {
-    if      (this.isAlive && this.liveNeighborCount <  2) this.isAlive = false;   // Loneliness
-    else if (this.isAlive && this.liveNeighborCount >  3) this.isAlive = false;   // Overpopulation
-    else if (!this.isAlive && this.liveNeighborCount === 3)  this.isAlive = true; // Reproduction
-    // otherwise stay the same
-  }
+function checkPause(){
+   if((mouseX>=width-100 && mouseX<=width-20) && (mouseY>= 5 && mouseY<=25))
+    paused=!paused;
+}
+function checkSpeed(){
+  if((mouseX>=width-35 && mouseX<=width-25) && (mouseY>= 30 && mouseY<=45))
+    speed++;
 }
