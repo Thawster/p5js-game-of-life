@@ -6,7 +6,9 @@ var speed;
 
 function setup () {
   createCanvas(600, 600);
-  
+  print("the most challenging part of customizing was figuring out how to use functions for mousePressed.");
+  print("Not too much out of my comfort, yet,  intend to keep working on it.");
+  print("Happy, this was a combination of all i have learned in my coding experience.");
   grid = new Grid(20);
   grid.randomize();
   timer=0;
@@ -25,12 +27,6 @@ function draw () {
    gen++;
   } 
   timer++;
-  if(timer>500){
-    grid = new Grid(20);
-    grid.randomize();
-    timer=0;
-    gen=0;
-  }
   }
   
 }
@@ -76,6 +72,7 @@ buttons(){
   textSize(15);
   text("Pause", width-90, 20);
   text("Speed", width-100, 40);
+  text("Reset", width-90, 99);
   textSize(12);
   text("+", width-54, 40);
   text("-", width-33, 39);
@@ -83,10 +80,12 @@ buttons(){
   strokeWeight(2);
   noFill();
   rect(width-100, 5, 80, 20);
+  rect(width-100, 85, 80, 17);
   strokeWeight(1);
   rect(width-55, 30, 10, 10);
   rect(width-35, 30, 10, 10);
   noStroke();
+  
 }
 
 randomize(){
@@ -193,6 +192,7 @@ class Cell{
 function mousePressed(){
   checkPause();
   checkSpeed();
+  checkReset();
 }
 
 function checkPause(){
@@ -202,4 +202,15 @@ function checkPause(){
 function checkSpeed(){
   if((mouseX>=width-35 && mouseX<=width-25) && (mouseY>= 30 && mouseY<=45))
     speed++;
+  else if((mouseX>=width-55 && mouseX<=width-45) && (mouseY>= 30 && mouseY<=45))
+    speed--;
+}
+function checkReset(){
+  if((mouseX>=width-100 && mouseX<=width-20) && (mouseY>=85  && mouseY<=102)){
+    grid = new Grid(20);
+    grid.randomize();
+    timer=0;
+    gen=0;
+  }
+  rect(width-100, 85, 80, 17);
 }
